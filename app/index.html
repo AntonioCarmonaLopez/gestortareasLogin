@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gestor de Tareas - Frontend</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:24px;background:#f7fafc;color:#111}
+    .card{background:white;padding:16px;border-radius:8px;box-shadow:0 6px 18px rgba(15,23,42,0.06);max-width:900px;margin:auto}
+    header{display:flex;justify-content:space-between;align-items:center}
+    h1{font-size:20px;margin:0}
+    form{display:flex;gap:8px;margin-top:12px}
+    input[type=text]{flex:1;padding:8px;border-radius:6px;border:1px solid #d1d5db}
+    button{padding:8px 12px;border-radius:6px;border:0;background:#2563eb;color:white;cursor:pointer}
+    ul{list-style:none;padding:0;margin-top:16px}
+    li{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #eef2f7}
+    .meta{font-size:12px;color:#6b7280}
+    .danger{background:#ef4444}
+    .small{font-size:13px;padding:6px 8px}
+    .hidden{display:none}
+    .center{display:flex;align-items:center;gap:8px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>Gestor de Tareas (Frontend simple)</h1>
+      <div class="meta">Conecta a <code>/api/tareas</code></div>
+    </header>
+
+    <form id="addForm">
+      <input id="title" type="text" placeholder="Título de la tarea" required />
+      <input id="desc" type="text" placeholder="Descripción (opcional)" />
+      <button type="submit">Añadir</button>
+    </form>
+
+    <div style="margin-top:12px">
+      <button id="refresh" class="small">Refrescar lista</button>
+      <span id="status" class="meta" style="margin-left:12px"></span>
+    </div>
+
+    <ul id="list"></ul>
+
+    <div id="empty" class="meta hidden">No hay tareas. Añade una arriba.</div>
+  </div>
+
+  <script>
+    // Configuración: ajusta baseURL si el backend corre en otro host/puerto
+    const baseURL = '';// ejemplo: 'http://localhost:8080'
+
+    const endpoints = {
+      list: '/api/tareas/gettareas',
+      add: '/api/tareas',         // POST esperado (body JSON)
+      del: id => `/api/tareas/${id}` // DELETE
+    };
+
+    const $list = document.getElementById('list');
+    const $status = document.getElementById('status');
+    const $empty = document.getElementById('empty');
+
+    async function req(path, opts){
+      try{
+        const res = await fetch(baseURL + path, opts);
+        if(!res.ok){
+          const txt = await res.text();
+          throw new Error(res.status + ' ' + res.statusText + ' - ' + txt);
+        }
+        // si no hay contenido útil (204), devolver null
+        const ct = res.headers.get('content-type') || '';
+        if(!ct.includes('application/json')) return null;
+        return await res.json();
+      }catch(err){
+        console.error(err);
+        $status.textContent = err.message;
+        return null;
+      }
+    }
+
+    async function load(){
+      $status.textContent = 'Cargando...';
+      const data = await req(endpoints.list);
+      $status.textContent = '';
+      renderList(data || []);
+    }
+
+    function renderList(items){
+      $list.innerHTML = '';
+      if(!items || items.length === 0){
+        $empty.classList.remove('hidden');
+        return;
+      }
+      $empty.classList.add('hidden');
+
+      items.forEach(t => {
+        const li = document.createElement('li');
+        const left = document.createElement('div');
+        left.innerHTML = `<strong>${escapeHtml(t.titulo || t.title || 'Sin título')}</strong><div class="meta">${escapeHtml(t.descripcion || t.desc || '')}</div>`;
+
+        const right = document.createElement('div');
+        right.className = 'center';
+
+        const del = document.createElement('button');
+        del.textContent = 'Eliminar';
+        del.className = 'small danger';
+        del.onclick = () => deleteTask(t.id ?? t._id ?? t.codigo ?? t.codigoTarea);
+
+        right.appendChild(del);
+        li.appendChild(left);
+        li.appendChild(right);
+        $list.appendChild(li);
+      });
+    }
+
+    async function addTask(payload){
+      $status.textContent = 'Enviando...';
+      const body = JSON.stringify(payload);
+      const res = await req(endpoints.add, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body
+      });
+      $status.textContent = '';
+      if(res !== null) load();
+    }
+
+    async function deleteTask(id){
+      if(!id){ alert('ID de tarea no disponible'); return; }
+      if(!confirm('Eliminar tarea ' + id + '?')) return;
+      $status.textContent = 'Eliminando...';
+      await req(endpoints.del(id), { method: 'DELETE' });
+      $status.textContent = '';
+      load();
+    }
+
+    // escapar texto simple para insertar en HTML
+    function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c]); }
+
+    document.getElementById('addForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const titulo = document.getElementById('title').value.trim();
+      const descripcion = document.getElementById('desc').value.trim();
+      if(!titulo) return alert('Pon un título');
+      addTask({ titulo, descripcion });
+      e.target.reset();
+    });
+
+    document.getElementById('refresh').addEventListener('click', load);
+
+    // carga inicial
+    load();
+  </script>
+</body>
+</html>
