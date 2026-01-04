@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS tareas (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(50),
+    descripcion VARCHAR(500) NOT NULL,
+    fechaCreacion DATE NOT NULL,
+    estado VARCHAR(20) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE  TABLE IF NOT EXISTS usuarios (
+  id BIGINT  AUTO_INCREMENT ,
+  username VARCHAR(50) NOT NULL,
+  rol VARCHAR(50) NOT NULL,
+  PRIMARY KEY (`id`)
+  );
+  
+  eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc2NzU0MTkwOCwiZXhwIjoxNzY3NTQ1NTA4fQ.nYtIGZDAlMy8YrSgQrl7NlAiG9OiuRr0RQ6uiboPZnmvEi5-4x_Soieg7hAWFiiOXInL6hXXMKH6g-JP5jBylg 
+

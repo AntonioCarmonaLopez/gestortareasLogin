@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-01-04T16:47:27+0100",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.9 (Ubuntu)"
+    date = "2026-01-04T18:09:21+0100",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.44.0.v20251118-1623, environment: Java 21.0.6 (Eclipse Adoptium)"
 )
 @Component
 public class TareaMapperImpl implements TareaMapper {
