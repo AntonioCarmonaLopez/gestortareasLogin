@@ -58,9 +58,9 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                // LOGIN PÚBLICO
+                // LOGIN && LOGOUT
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-
+                .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                 // Recursos públicos (Angular + Swagger)
                 .requestMatchers(
                     "/",
